@@ -1,0 +1,23 @@
+{
+  "presets": [
+    [
+      "env"
+//      {
+//        "modules": false
+//      }
+    ]
+  ],
+  "plugins": [
+    "add-module-exports",
+    "transform-object-rest-spread",
+    "transform-decorators-legacy",
+    "transform-class-properties",
+//    [
+//      "transform-runtime", {
+//      "polyfill": false,
+//      "regenerator": true
+//    }],
+//    "external-helpers"
+  ],
+  "retainLines": true
+}
