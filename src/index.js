@@ -1,7 +1,9 @@
 import Tensor from "./Tensor";
+import TensorMath from "./TensorMath";
 
 export {
-  Tensor
+  Tensor,
+  TensorMath
 }
 
 export function println(...array) {

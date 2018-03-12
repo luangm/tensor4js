@@ -103,7 +103,7 @@ export default class Tensor {
   }
 
   addi(other) {
-    return TensorMath.addi(this, other);
+    return TensorMath.add(this, other, this);
   }
 
   broadcast(shape) {
@@ -127,8 +127,16 @@ export default class Tensor {
     return TensorMath.matmul(this, other);
   }
 
+  mod(other) {
+    return TensorMath.mod(this, other);
+  }
+
   multiply(other) {
     return TensorMath.multiply(this, other);
+  }
+
+  negate() {
+    return TensorMath.negate(this);
   }
 
   reshape(shape) {

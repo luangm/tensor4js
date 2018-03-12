@@ -40,18 +40,23 @@ export default class Operation {
     return false;
   }
 
-  get type() {
-    throw new Error('should not call base class\'s type');
-  }
-
   exec() {
     throw new Error('should not call base class\'s exec');
   }
 
+  /**
+   * body of the function, to be inlined.
+   * Child class SHOULD override this
+   */
   body(a, b) {
 
   }
 
+  /**
+   * Reduction update function. to be inlined
+   * @param accum
+   * @param a
+   */
   update(accum, a) {
 
   }

@@ -2,8 +2,9 @@ import TransformOp from "./TransformOp";
 
 export default class SetOp extends TransformOp {
 
-  constructor(input, other, result) {
+  constructor(input, other, result, {scalar} = {}) {
     super(input, other, result);
+    this._scalar = scalar;
   }
 
   get type() {
@@ -11,7 +12,7 @@ export default class SetOp extends TransformOp {
   }
 
   body(a, b) {
-    return b;
+    return this._scalar;
   }
 
 }

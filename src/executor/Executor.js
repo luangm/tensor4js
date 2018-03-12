@@ -35,6 +35,11 @@ export default class Executor {
    */
   exec(op) {
 
+    if (op.isSpecial) {
+      op.exec();
+      return;
+    }
+
     if (op instanceof PairwiseOp) {
       this._execPairwise(op);
       return;
@@ -42,11 +47,6 @@ export default class Executor {
 
     if (op instanceof TransformOp) {
       this._execTransform(op);
-      return;
-    }
-
-    if (op.isSpecial) {
-      op.exec();
       return;
     }
 
@@ -338,30 +338,16 @@ export default class Executor {
   }
 
   _execTransform(op) {
-    let shape = op.result.shape;
-    if (shape.length === 2) {
-      this._execTransform2D(op);
-    } else {
-      this._execTransformGeneral(op);
-    }
-  }
-
-  _execTransform2D(op) {
-    let input = op.input.data;
-    let result = op.result.data;
-
-    let inputStrides = op.input.strides;
-    let resultStrides = op.result.strides;
-
-    let shape = op.result.shape;
-
-    for (let i = 0; i < shape[0]; i++) {
-      for (let j = 0; j < shape[1]; j++) {
-        let inputPointer = i * inputStrides[0] + j * inputStrides[1];
-        let resultPointer = i * resultStrides[0] + j * resultStrides[1];
-
-        result[resultPointer] = op.body(input[inputPointer]);
-      }
+    switch (op.result.rank) {
+      case 0:
+      case 1:
+        this._execTransformVector(op);
+        break;
+      case 2:
+        this._execTransformMatrix(op);
+        break;
+      default:
+        this._execTransformGeneral(op);
     }
   }
 
@@ -404,6 +390,34 @@ export default class Executor {
       if (r < 0) {
         break;
       }
+    }
+  }
+
+  _execTransformMatrix(op) {
+    let input = op.input.data;
+    let result = op.result.data;
+
+    let inputStrides = op.input.strides;
+    let resultStrides = op.result.strides;
+
+    let shape = op.result.shape;
+
+    for (let i = 0; i < shape[0]; i++) {
+      for (let j = 0; j < shape[1]; j++) {
+        let inputPointer = i * inputStrides[0] + j * inputStrides[1];
+        let resultPointer = i * resultStrides[0] + j * resultStrides[1];
+
+        result[resultPointer] = op.body(input[inputPointer]);
+      }
+    }
+  }
+
+  _execTransformVector(op) {
+    let input = op.input.data;
+    let result = op.result.data;
+    
+    for (let i = 0; i < result.length; i++) {
+      result[i] = op.body(input[i]);
     }
   }
 

@@ -37,8 +37,8 @@ import SinhOp from "./op/transform/SinhOp";
 import SinOp from "./op/transform/SinOp";
 import SoftmaxOp from "./op/transform/SoftmaxOp";
 import SqrtGradOp from "./op/transform/SqrtGradOp";
+import SqrtOp from "./op/transform/SqrtOp";
 import SquareOp from "./op/transform/SquareOp";
-import SquareRootOp from "./op/transform/SquareRootOp";
 import StepOp from "./op/transform/StepOp";
 import TanGradOp from "./op/transform/TanGradOp";
 import TanhOp from "./op/transform/TanhOp";
@@ -48,24 +48,28 @@ import TensorUtils from "./util/TensorUtils";
 
 export default class TensorMath {
 
-  static abs(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static abs(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AbsOp(base, null, result));
     return result;
   }
 
-  static acos(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static acos(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AcosOp(base, null, result));
     return result;
   }
 
-  static acosh(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static acosh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AcoshOp(base, null, result));
     return result;
   }
 
+  // DONE
   static add(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new AddOp(left, right, result));
@@ -74,15 +78,6 @@ export default class TensorMath {
 
   static addN(items) {
 
-  }
-
-  static addi(left, right) {
-    // let resultShape = TensorUtils.broadcastShapes(left.shape, right.shape);
-    // let result = new Tensor({shape: resultShape});
-    // left = left.broadcast(resultShape);
-    // right = right.broadcast(resultShape);
-    Executor.instance.exec(new AddOp(left, right, left));
-    return left;
   }
 
   static argMax(base, dim) {
@@ -105,26 +100,30 @@ export default class TensorMath {
     return result;
   }
 
-  static asin(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static asin(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AsinOp(base, null, result));
     return result;
   }
 
-  static asinh(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static asinh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AsinhOp(base, null, result));
     return result;
   }
 
-  static atan(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static atan(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AtanOp(base, null, result));
     return result;
   }
 
-  static atanh(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static atanh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new AtanhOp(base, null, result));
     return result;
   }
@@ -170,30 +169,35 @@ export default class TensorMath {
     return TensorMath.matmul(gradReshape, xCol, false, true).reshape(kernel.shape);
   }
 
-  static cos(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static cos(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new CosOp(base, null, result));
     return result;
   }
 
-  static cosh(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static cosh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new CoshOp(base, null, result));
     return result;
   }
 
+  // DONE
   static divide(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new DivideOp(left, right, result));
     return result;
   }
 
+  // DONE
   static exp(base, result) {
     result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new ExpOp(base, null, result));
     return result;
   }
 
+  // DONE
   static expm1(base, result) {
     result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new Expm1Op(base, null, result));
@@ -206,12 +210,14 @@ export default class TensorMath {
     return TensorMath.subtract(node, mul);
   }
 
-  static log(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static log(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new LogOp(base, null, result));
     return result;
   }
 
+  // DONE
   static log1p(base, result) {
     result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new Log1pOp(base, null, result));
@@ -243,6 +249,7 @@ export default class TensorMath {
     return result;
   }
 
+  // DONE
   static max(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MaxOp(left, right, result));
@@ -279,32 +286,37 @@ export default class TensorMath {
     return result;
   }
 
+  // DONE
   static min(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MinOp(left, right, result));
     return result;
   }
 
+  // DONE
   static mod(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new ModOp(left, right, result));
     return result;
   }
 
+  // DONE
   static multiply(left, right, result) {
     result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MultiplyOp(left, right, result));
     return result;
   }
 
-  static negate(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static negate(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new NegateOp(base, null, result));
     return result;
   }
 
-  static reciprocal(base) {
-    let result = new Tensor({shape: base.shape});
+  // DONE
+  static reciprocal(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new ReciprocalOp(base, null, result));
     return result;
   }
@@ -377,14 +389,28 @@ export default class TensorMath {
     return result;
   }
 
-  static relu(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Computes the Relu Activation
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static relu(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new ReluOp(base, null, result));
     return result;
   }
 
-  static round(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Round to nearest integer
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static round(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new RoundOp(base, null, result));
     return result;
   }
@@ -395,13 +421,21 @@ export default class TensorMath {
     return result;
   }
 
+  // DONE
   static set(base, scalar) {
-    Executor.instance.exec(new SetOp(base, scalar, base));
+    Executor.instance.exec(new SetOp(base, null, base, {scalar}));
     return base;
   }
 
-  static sigmoid(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Sigmoid Activation
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static sigmoid(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new SigmoidOp(base, null, result));
     return result;
   }
@@ -412,8 +446,15 @@ export default class TensorMath {
     return result;
   }
 
-  static sign(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Sign of the value
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static sign(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new SignOp(base, null, result));
     return result;
   }
@@ -480,9 +521,17 @@ export default class TensorMath {
     return TensorMath.multiply(subtract, softmax);
   }
 
-  static sqrt(base) {
-    let result = new Tensor({shape: base.shape});
-    Executor.instance.exec(new SquareRootOp(base, null, result));
+
+  /**
+   * Square Root
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static sqrt(base, result) {
+    result = result || new Tensor({shape: base.shape});
+    Executor.instance.exec(new SqrtOp(base, null, result));
     return result;
   }
 
@@ -492,8 +541,15 @@ export default class TensorMath {
     return result;
   }
 
-  static square(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Square
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static square(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new SquareOp(base, null, result));
     return result;
   }

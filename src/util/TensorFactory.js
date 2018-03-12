@@ -2,7 +2,7 @@ import Tensor from "../Tensor";
 import Executor from "../executor/Executor";
 import RandomOp from "../op/transform/RandomOp";
 import Shape from "../Shape";
-import LinspaceOp from "../op/transform/LinspaceOp";
+import LinspaceOp from "../op/creation/LinspaceOp";
 
 export default class TensorFactory {
 

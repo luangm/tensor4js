@@ -33,7 +33,6 @@ export default class Shape {
     return this._strides;
   }
 
-
   getOffset(indices = []) {
     if (this.rank !== indices.length) {
       throw new Error('Indices must be the same length as rank of the tensor');
