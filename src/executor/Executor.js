@@ -50,6 +50,11 @@ export default class Executor {
       return;
     }
 
+    if (op instanceof ReductionOp) {
+      this._execReduce(op);
+      return;
+    }
+
 
     if (op instanceof SpecialOp) {
       // Special Ops bypasses executor
@@ -146,35 +151,6 @@ export default class Executor {
     }
 
     return accum;
-  }
-
-  /**
-   * Executes an accumulation with a 2D input
-   * @param op {Operation}
-   * @param accumDims {boolean[]}
-   * @private
-   */
-  _execAccum2D(op, accumDims) {
-    let input = op.input.data;
-    let result = op.result.data;
-
-    let inputStrides = op.input.strides;
-    let resultStrides = op.result.strides;
-
-    let shape = op.input.shape; // accumulate around input, not the result
-
-    for (let i = 0; i < shape[0]; i++) {
-      for (let j = 0; j < shape[1]; j++) {
-        let inputPointer = i * inputStrides[0] + j * inputStrides[1];
-
-        let resultPointer = accumDims[0] ? 0 : i * resultStrides[0];
-        resultPointer += accumDims[1] ? 0 : j * resultStrides[1];
-
-        result[resultPointer] = op.update(result[resultPointer], input[inputPointer]);
-
-        // console.log(inputPointer, resultPointer);
-      }
-    }
   }
 
   /**
@@ -337,6 +313,96 @@ export default class Executor {
     }
   }
 
+  _execReduce(op) {
+    switch (op.result.rank) {
+      case 0:
+      case 1:
+        this._execReduceVector(op);
+        break;
+      case 2:
+        this._execReduceMatrix(op);
+        break;
+      default:
+        this._execReduceGeneral(op);
+    }
+  }
+
+  _execReduceMatrix(op) {
+    let reducedDims = op.reducedDims;
+    let input = op.input.data;
+    let result = op.result.data;
+
+    let inputStrides = op.input.strides;
+    let resultStrides = op.result.strides;
+
+    let shape = op.input.shape; // accumulate around input, not the result
+    let s0 = shape[0];
+    let s1 = shape[1];
+    let is0 = inputStrides[0];
+    let is1 = inputStrides[1];
+    let rs0 = reducedDims[0] ? 0 : resultStrides[0];
+    let rs1 = reducedDims[1] ? 0 : resultStrides[1];
+
+    for (let i = 0; i < s0; i++) {
+      for (let j = 0; j < s1; j++) {
+        let inputPointer = i * is0 + j * is1;
+        let resultPointer = i * rs0 + j * rs1;
+        result[resultPointer] = op.update(result[resultPointer], input[inputPointer]);
+      }
+    }
+  }
+
+  _execReduceVector(op) {
+    let input = op.input.data;
+    let result = op.result.data;
+
+    for (let i = 0; i < input.length; i++) {
+      result[0] = op.update(result[0], input[i]);
+    }
+  }
+
+  _execReduceGeneral(op) {
+    let input = op.input.data;
+    let result = op.result.data;
+
+    let inputStrides = op.input.strides;
+    let resultStrides = op.result.strides;
+
+    let shape = op.result.shape;
+
+    let inputPointer = 0;
+    let resultPointer = 0;
+
+    let rank = shape.length;
+    let slots = new Array(rank).fill(0);
+
+    while (true) {
+
+      // Calc
+      result[resultPointer] = op.body(input[inputPointer]);
+
+      let r = rank - 1;
+      for (; r >= 0; r--) {
+        slots[r]++;
+        inputPointer += inputStrides[r];
+        resultPointer += resultStrides[r];
+
+        if (slots[r] < shape[r]) {
+          break;
+        }
+
+        slots[r] = 0;
+        inputPointer -= inputStrides[r] * shape[r];
+        resultPointer -= resultStrides[r] * shape[r];
+      }
+
+      // Overflown
+      if (r < 0) {
+        break;
+      }
+    }
+  }
+
   _execTransform(op) {
     switch (op.result.rank) {
       case 0:
@@ -415,7 +481,7 @@ export default class Executor {
   _execTransformVector(op) {
     let input = op.input.data;
     let result = op.result.data;
-    
+
     for (let i = 0; i < result.length; i++) {
       result[i] = op.body(input[i]);
     }

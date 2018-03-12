@@ -52,6 +52,32 @@ export default class ShapeUtils {
     return mul;
   }
 
+  static getReducedDims(shape, dims) {
+    let reducedDims = new Array(shape.length).fill(false);
+    if (dims === -1) {
+      reducedDims.fill(true);
+    } else if (Number.isInteger(dims)) {
+      if (dims < 0 || dims >= shape.length) {
+        throw new Error('Dimensions must be [0 rank-1]');
+      }
+      reducedDims[dims] = true;
+    } else if (Array.isArray(dims)) {
+      for (let dim of dims) {
+        if (!Number.isInteger(dim)) {
+          throw new Error('Dimensions must be integers');
+        }
+        if (dim < 0 || dim >= shape.length) {
+          throw new Error('Dimensions must be [0 rank-1]');
+        }
+        reducedDims[dim] = true;
+      }
+    } else {
+      throw new Error('Dims must be int or [int]');
+    }
+
+    return reducedDims;
+  }
+
   static getStrides(shape) {
     let rank = shape.length;
     let strides = new Array(rank);
@@ -101,6 +127,29 @@ export default class ShapeUtils {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the reduced shape
+   *
+   * @param {[int]} shape
+   * @param {int | [int]} dims - dims to reduce
+   * @param {boolean} [keepDims = false]
+   * @returns {[int]} Reduced Shape
+   */
+  static reduceShape(shape, dims, keepDims) {
+    let resultShape = [];
+    let reducedDims = ShapeUtils.getReducedDims(shape, dims);
+
+    for (let i = 0; i < shape.length; i++) {
+      if (!reducedDims[i]) {
+        resultShape.push(shape[i]);
+      } else if (keepDims) {
+        resultShape.push(1);
+      }
+    }
+
+    return resultShape;
   }
 
   /**

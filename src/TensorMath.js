@@ -44,6 +44,7 @@ import TanGradOp from "./op/transform/TanGradOp";
 import TanhOp from "./op/transform/TanhOp";
 import TanOp from "./op/transform/TanOp";
 import Tensor from "./Tensor";
+import ShapeUtils from "./util/ShapeUtils";
 import TensorUtils from "./util/TensorUtils";
 
 export default class TensorMath {
@@ -346,47 +347,23 @@ export default class TensorMath {
   }
 
   /**
+   * Reduce Sum
    *
-   * @param base {Tensor}
-   * @param dims {int|int[]} [dims = -1]
-   * @param keepDims {boolean} [keepDims = true]
+   * @param {Tensor} base
+   * @param {int|int[]} [dims] dims to be reduced
+   * @param {boolean} [keepDims] If keepDims, the dims are kept at 1
    * @returns {Tensor}
    */
-  static reduceSum(base, dims = -1, keepDims = true) {
+  static reduceSum(base, dims = -1, keepDims = false) {
+    let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
+    let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
+    let resultShape2 = ShapeUtils.reduceShape(base.shape, dims, keepDims);
 
-    let resultShape = base.shape.slice();
-    let accumDims = new Array(base.shape.length).fill(false);
-
-    if (dims === -1) {
-      resultShape.fill(1);
-      accumDims.fill(true);
-    } else if (Number.isInteger(dims)) {
-      if (dims < 0 || dims >= resultShape.length) {
-        throw new Error('Dimensions must be [0 rank-1]');
-      }
-      resultShape[dims] = 1;
-      accumDims[dims] = true;
-    } else if (Array.isArray(dims)) {
-      for (let dim of dims) {
-        if (!Number.isInteger(dim)) {
-          throw new Error('Dimensions must be integers');
-        }
-        if (dim < 0 || dim >= resultShape.length) {
-          throw new Error('Dimensions must be [0 rank-1]');
-        }
-        resultShape[dim] = 1;
-        accumDims[dim] = true;
-      }
-    } else {
-      throw new Error('Dims must be int or [int]');
-    }
-
-    // console.log("Shape: ", resultShape);
+    console.log(resultShape, resultShape2);
 
     let result = new Tensor({shape: resultShape});
-    let op = new ReduceSumOp(base, null, result);
-    Executor.instance._execAccum2D(op, accumDims);
-    return result;
+    Executor.instance.exec(new ReduceSumOp(base, null, result, {reducedDims}));
+    return result.reshape(resultShape2);
   }
 
   /**

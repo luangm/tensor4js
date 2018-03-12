@@ -2,12 +2,13 @@ import ReductionOp from "./ReductionOp";
 
 export default class ReduceSumOp extends ReductionOp {
 
-  constructor(input, other, result) {
+  constructor(input, other, result, {reducedDims} = {}) {
     super(input, other, result);
+    this._reducedDims = reducedDims;
   }
 
-  get type() {
-    return 'reduceSum';
+  get reducedDims() {
+    return this._reducedDims;
   }
 
   body(a, b) {

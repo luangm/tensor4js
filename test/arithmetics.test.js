@@ -46,7 +46,8 @@ test('addi - throw error', function() {
   let z = x.addi(y);
   let expected = Tensor.create([[3, 4, 5], [7, 8, 9]]);
 
-  console.log(z);
+  throw new Error();
+  // console.log(z);
   // expect(z).toEqual(expected);
   // expect(z).toBe(x);
 });

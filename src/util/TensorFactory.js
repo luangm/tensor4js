@@ -73,7 +73,7 @@ export default class TensorFactory {
   }
 
   static scalar(scalar) {
-    return new Tensor({data: [scalar], shape: [1, 1]});
+    return new Tensor({data: [scalar], shape: []});
   }
 
   static zeros(shape) {
