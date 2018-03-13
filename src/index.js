@@ -9,7 +9,7 @@ export {
 export function println(...array) {
   let result = [];
   for (let obj of array) {
-    if (obj instanceof Tensor || obj instanceof Expression) {
+    if (obj instanceof Tensor) {
       result.push(obj.toString());
     } else {
       result.push(obj);
