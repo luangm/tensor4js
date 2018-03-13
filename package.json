@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "Tensor for JavaScript",
   "main": "dist/index.js",
-  "rollup": "dist/index.umd.js",
+  "rollup": "dist/index.js",
   "scripts": {
-    "start": "webpack-dev-server --content-base dev/",
+    "start": "",
     "test": "jest"
   },
   "author": {

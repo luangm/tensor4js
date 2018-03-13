@@ -10,3 +10,4 @@ src
 webpack.config.js
 .babelrc
 test
+docs
