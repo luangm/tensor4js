@@ -58,37 +58,55 @@ test('scalar add', function() {
 });
 
 test('vector add scalar', function() {
-  let x = Tensor.create([1,2,3]);
+  let x = Tensor.create([1, 2, 3]);
   let y = Tensor.create(5);
   let z = x.add(y);
-  let expected = Tensor.create([6,7,8]);
+  let expected = Tensor.create([6, 7, 8]);
 
   expect(z).toEqual(expected);
 });
 
 test('matrix add scalar', function() {
-  let x = Tensor.create([[1,2,3], [4,5, 6]]);
+  let x = Tensor.create([[1, 2, 3], [4, 5, 6]]);
   let y = Tensor.create(5);
   let z = x.add(y);
-  let expected = Tensor.create([[6,7,8],[9, 10, 11]]);
+  let expected = Tensor.create([[6, 7, 8], [9, 10, 11]]);
 
   expect(z).toEqual(expected);
 });
 
 test('matrix add vector', function() {
-  let x = Tensor.create([[1,2,3], [4,5, 6]]);
-  let y = Tensor.create([1,2,3]);
+  let x = Tensor.create([[1, 2, 3], [4, 5, 6]]);
+  let y = Tensor.create([1, 2, 3]);
   let z = x.add(y);
-  let expected = Tensor.create([[2,4,6],[5, 7, 9]]);
+  let expected = Tensor.create([[2, 4, 6], [5, 7, 9]]);
+
+  expect(z).toEqual(expected);
+});
+
+test('matrix add vector2', function() {
+  let x = Tensor.create([[1, 2]]); // 1x2
+  let y = Tensor.create([2, 3]); // 2
+  let z = x.add(y);
+  let expected = Tensor.create([[3, 5]]);
+
+  expect(z).toEqual(expected);
+});
+
+test('3d add scalar', function() {
+  let x = Tensor.create([[[1, 2, 3], [4, 5, 6]]]);
+  let y = Tensor.create(2);
+  let z = x.add(y);
+  let expected = Tensor.create([[[3, 4, 5], [6, 7, 8]]]);
 
   expect(z).toEqual(expected);
 });
 
 test('3d add vector', function() {
-  let x = Tensor.create([[[1,2,3], [4,5, 6]]]);
-  let y = Tensor.create([1,2,3]);
+  let x = Tensor.create([[[1, 2, 3], [4, 5, 6]]]);
+  let y = Tensor.create([1, 2, 3]);
   let z = x.add(y);
-  let expected = Tensor.create([[[2,4,6],[5, 7, 9]]]);
+  let expected = Tensor.create([[[2, 4, 6], [5, 7, 9]]]);
 
   expect(z).toEqual(expected);
 });

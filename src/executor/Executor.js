@@ -103,12 +103,6 @@ export default class Executor {
     let inputReshaped = op.input.reshape(inputBroadShape);
     let otherReshaped = op.other.reshape(otherBroadShape);
 
-    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(inputReshaped.shape, shape);
-    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(otherReshaped.shape, shape);
-
-    console.log(inputBroadShape, otherBroadShape);
-    console.log(inputBroadDims, otherBroadDims);
-
     let input = inputReshaped.data;
     let other = otherReshaped.data;
 
@@ -129,8 +123,8 @@ export default class Executor {
     for (let i = 0; i < rank; i++) {
       let r = rank - 1 - i;
       MEM.push(shape[r]);
-      iS[i] = (inputBroadDims[r] ? 0 : op.input.strides[r]) | 0;
-      oS[i] = (otherBroadDims[r] ? 0 : op.other.strides[r]) | 0;
+      iS[i] = (inputBroadShape[r] === 1 ? 0 : inputReshaped.strides[r]) | 0;
+      oS[i] = (otherBroadShape[r] === 1 ? 0 : otherReshaped.strides[r]) | 0;
       rS[i] = op.result.strides[r] | 0;
       MEM.push(iS[i] - (i > 0 ? iS[i - 1] * shape[rank - i] : 0));
       MEM.push(oS[i] - (i > 0 ? oS[i - 1] * shape[rank - i] : 0));
@@ -175,16 +169,13 @@ export default class Executor {
     let inputReshaped = op.input.reshape(inputBroadShape);
     let otherReshaped = op.other.reshape(otherBroadShape);
 
-    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(inputReshaped.shape, shape);
-    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(otherReshaped.shape, shape);
-
     let input = inputReshaped.data;
     let other = otherReshaped.data;
 
-    let inputS0 = (inputBroadDims[0] ? 0 : inputReshaped.strides[0]) | 0;
-    let inputS1 = (inputBroadDims[1] ? 0 : inputReshaped.strides[1]) | 0;
-    let otherS0 = (otherBroadDims[0] ? 0 : otherReshaped.strides[0]) | 0;
-    let otherS1 = (otherBroadDims[1] ? 0 : otherReshaped.strides[1]) | 0;
+    let inputS0 = (inputBroadShape[0] === 1 ? 0 : inputReshaped.strides[0]) | 0;
+    let inputS1 = (inputBroadShape[1] === 1 ? 0 : inputReshaped.strides[1]) | 0;
+    let otherS0 = (otherBroadShape[0] === 1 ? 0 : otherReshaped.strides[0]) | 0;
+    let otherS1 = (otherBroadShape[1] === 1 ? 0 : otherReshaped.strides[1]) | 0;
     let resultS0 = op.result.strides[0] | 0;
     let resultS1 = op.result.strides[1] | 0;
     let s0 = shape[0] | 0;
@@ -226,16 +217,20 @@ export default class Executor {
   }
 
   _execPairwiseVector(op) {
-    let input = op.input.data;
-    let other = op.other.data;
     let result = op.result.data;
     let shape = op.result.shape;
 
-    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(op.input.shape, shape);
-    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(op.other.shape, shape);
+    let inputBroadShape = ShapeUtils.getBroadcastedShape(op.input.shape, shape);
+    let otherBroadShape = ShapeUtils.getBroadcastedShape(op.other.shape, shape);
 
-    let inputS0 = (inputBroadDims[0] ? 0 : op.input.strides[0]) | 0;
-    let otherS0 = (otherBroadDims[0] ? 0 : op.other.strides[0]) | 0;
+    let inputReshaped = op.input.reshape(inputBroadShape);
+    let otherReshaped = op.other.reshape(otherBroadShape);
+
+    let input = inputReshaped.data;
+    let other = otherReshaped.data;
+
+    let inputS0 = (inputBroadShape[0] === 1 ? 0 : inputReshaped.strides[0]) | 0;
+    let otherS0 = (otherBroadShape[0] === 1 ? 0 : otherReshaped.strides[0]) | 0;
     let resultS0 = op.result.strides[0] | 0;
     let s0 = shape[0] | 0;
 

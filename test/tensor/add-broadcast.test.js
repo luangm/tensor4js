@@ -1,7 +1,7 @@
 import {Tensor} from '../../src/index.js';
 import {println} from "../../src/index";
-import TensorMath from "../../src/core/TensorMath";
-import ShapeUtils from "../../src/core/util/ShapeUtils";
+import TensorMath from "../../src/TensorMath";
+import ShapeUtils from "../../src/util/ShapeUtils";
 
 test('add with broadcast', function() {
   let a = new Tensor({data: [1, 2, 3, 4, 5, 6], shape: [2, 1, 3]});
