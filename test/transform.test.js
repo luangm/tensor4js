@@ -35,6 +35,13 @@ test('abs', function() {
   expect(z).toEqual(expected);
 });
 
+test('abs 3D', function() {
+  let x = Tensor.create([[[-1, -2], [3, 4], [5, -6]], [[-1, -3], [-3, 4], [5, -6]]]);
+  let z = TensorMath.abs(x);
+  let expected = Tensor.create([[[1, 2], [3, 4], [5, 6]], [[1, 3], [3, 4], [5, 6]]]);
+  expect(z).toEqual(expected);
+});
+
 test('negate', function() {
   let x = Tensor.create([-1, 1, -2, 3]);
   let z = x.negate();

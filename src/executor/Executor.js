@@ -1,10 +1,8 @@
 import IndexOp from "../op/index/IndexOp";
 import PairwiseOp from "../op/pairwise/PairwiseOp";
 import ReductionOp from "../op/reduction/ReductionOp";
-import SpecialOp from "../op/special/SpecialOp";
 import IndexSetOp from "../op/transform/IndexSetOp";
 import TransformOp from "../op/transform/TransformOp";
-import Tensor from "../Tensor";
 import ShapeUtils from "../util/ShapeUtils";
 import TensorUtils from "../util/TensorUtils";
 
@@ -55,26 +53,13 @@ export default class Executor {
       return;
     }
 
-
-    if (op instanceof SpecialOp) {
-      // Special Ops bypasses executor
-      op.exec();
-    } else if (op instanceof ReductionOp) {
-      let accum = this._accumAtDim(op, 0);
-      op.result.data[0] = op.getResult(accum);
-    } else {
-      this._execAtDim(op, 0);
-    }
+    throw new Error("Cannot Execute Unknown Op");
   }
 
   execAtDim(op, dim) {
     if (op.isSpecial) {
       op.exec(dim);
       return;
-    }
-
-    if (op instanceof ReductionOp) {
-      this._accum(op, 0, dim, new Array(op.input.rank));
     }
 
     if (op instanceof IndexOp) {
@@ -86,167 +71,20 @@ export default class Executor {
     }
   }
 
-  _accum(op, currentDim, targetDim, indices) {
-    let input = op.input;
-    let result = op.result;
-
-    if (currentDim === input.rank) {
-      let accum = 0;
-      for (let i = 0; i < input.shape[targetDim]; i++) {
-        indices[targetDim] = i;
-        let offset = TensorUtils.computeOffset(indices, input.shape, input.strides);
-        let val = input.data[offset];
-        accum = op.update(accum, val);
-      }
-
-      indices[targetDim] = 0;
-      let offset = TensorUtils.computeOffset(indices, result.shape, result.strides);
-      result.data[offset] = accum;
-      return;
-    }
-
-    // When encounter the target dim, set the result indices[dim] = 0
-    if (currentDim === targetDim) {
-      indices[currentDim] = 0;
-      this._accum(op, currentDim + 1, targetDim, indices);
-    } else {
-      for (let i = 0; i < input.shape[currentDim]; i++) {
-        indices[currentDim] = i;
-        this._accum(op, currentDim + 1, targetDim, indices);
-      }
-    }
-  }
-
-  /**
-   * Starts the execution from a certain dimension
-   */
-  _accumAtDim(op, dim, indices) {
-    let rank = op.input.rank;
-    if (dim >= rank) {
-      return;
-    }
-
-    let shape = op.input.shape;
-    let strides = op.input.strides;
-
-    if (!indices) {
-      indices = [];
-      for (let i = 0; i < rank; i++) {
-        indices.push(0);
-      }
-    }
-
-    let accum = 0;
-
-    for (let i = 0; i < shape[dim]; i++) {
-      indices[dim] = i;
-      if (dim === rank - 1) {
-        let offset = TensorUtils.computeOffset(indices, shape, strides);
-        let a = op.input.data[offset];
-        accum = op.update(accum, a);
-      } else {
-        let subResult = this._accumAtDim(op, dim + 1, indices);
-        accum += subResult;
-      }
-    }
-
-    return accum;
-  }
-
-  /**
-   * Starts the execution from a certain dimension
-   */
-  _execAtDim(op, dim, indices) {
-
-    // console.log("***", indices);
-
-    let rank = op.result.rank;
-    if (dim >= rank) {
-      return;
-    }
-
-    let shape = op.input.shape;
-    let strides = op.input.strides;
-
-    if (!indices) {
-      indices = [];
-      for (let i = 0; i < rank; i++) {
-        indices.push(0);
-      }
-    }
-
-    for (let i = 0; i < shape[dim]; i++) {
-      indices[dim] = i;
-      if (dim === rank - 1) {
-        // console.log(indices);
-        let offset = TensorUtils.computeOffset(indices, shape, strides);
-        let a = op.input.data[offset];
-        let b = null;
-        if (op.other) {
-          if (op.other instanceof Tensor) {
-            b = op.other.data[offset];
-          } else {
-            b = op.other; // TODO: hack, should do broadcast here
-          }
-        }
-        op.result.data[offset] = op.body(a, b, offset);
-      }
-
-      this._execAtDim(op, dim + 1, indices);
-    }
-  }
-
   _execPairwise(op) {
-    let shape = op.result.shape;
-    if (shape.length === 2) {
-      this._execPairwise2D(op);
-    } else {
-      this._execPairwiseGeneral(op);
-    }
-  }
-
-  _execPairwise2D(op) {
-    let input = op.input.data;
-    let other = op.other.data;
-    let result = op.result.data;
-    let shape = op.result.shape;
-
-    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(op.input.shape, shape);
-    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(op.other.shape, shape);
-
-    let inputS0 = (inputBroadDims[0] ? 0 : op.input.strides[0]) | 0;
-    let inputS1 = (inputBroadDims[1] ? 0 : op.input.strides[1]) | 0;
-    let otherS0 = (otherBroadDims[0] ? 0 : op.other.strides[0]) | 0;
-    let otherS1 = (otherBroadDims[1] ? 0 : op.other.strides[1]) | 0;
-    let resultS0 = op.result.strides[0] | 0;
-    let resultS1 = op.result.strides[1] | 0;
-    let s0 = shape[0] | 0;
-    let s1 = shape[1] | 0;
-
-    let iPtr = 0;
-    let oPtr = 0;
-    let rPtr = 0;
-
-    let inputD0 = (inputS0 - inputS1 * s1) | 0;
-    let otherD0 = (otherS0 - otherS1 * s1) | 0;
-    let resultD0 = (resultS0 - resultS1 * s1) | 0;
-
-    let inputD1 = inputS1 | 0;
-    let otherD1 = otherS1 | 0;
-    let resultD1 = resultS1 | 0;
-
-    for (let i = 0; i < s0; i++) {
-
-      for (let j = 0; j < s1; j++) {
-        result[rPtr] = op.body(input[iPtr], other[oPtr]);
-        iPtr = (iPtr + inputD1) | 0;
-        oPtr = (oPtr + otherD1) | 0;
-        rPtr = (rPtr + resultD1) | 0;
-      }
-
-      iPtr = (iPtr + inputD0) | 0;
-      oPtr = (oPtr + otherD0) | 0;
-      rPtr = (rPtr + resultD0) | 0;
+    switch (op.result.rank) {
+      case 0:
+        this._execPairwiseScalar(op);
+        break;
+      case 1:
+        this._execPairwiseVector(op);
+        break;
+      case 2:
+        this._execPairwiseMatrix(op);
+        break;
+      default:
+        this._execPairwiseGeneral(op);
+        break;
     }
   }
 
@@ -256,13 +94,23 @@ export default class Executor {
    * @private
    */
   _execPairwiseGeneral(op) {
-    let input = op.input.data;
-    let other = op.other.data;
     let result = op.result.data;
     let shape = op.result.shape;
 
-    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(op.input.shape, shape);
-    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(op.other.shape, shape);
+    let inputBroadShape = ShapeUtils.getBroadcastedShape(op.input.shape, shape);
+    let otherBroadShape = ShapeUtils.getBroadcastedShape(op.other.shape, shape);
+
+    let inputReshaped = op.input.reshape(inputBroadShape);
+    let otherReshaped = op.other.reshape(otherBroadShape);
+
+    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(inputReshaped.shape, shape);
+    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(otherReshaped.shape, shape);
+
+    console.log(inputBroadShape, otherBroadShape);
+    console.log(inputBroadDims, otherBroadDims);
+
+    let input = inputReshaped.data;
+    let other = otherReshaped.data;
 
     let inputPointer = 0;
     let otherPointer = 0;
@@ -313,6 +161,96 @@ export default class Executor {
     }
   }
 
+  /**
+   * Handling Broadcasting: The input and other must first to be reshaped to be the same rank as the result Shape
+   */
+  _execPairwiseMatrix(op) {
+
+    let result = op.result.data;
+    let shape = op.result.shape;
+
+    let inputBroadShape = ShapeUtils.getBroadcastedShape(op.input.shape, shape);
+    let otherBroadShape = ShapeUtils.getBroadcastedShape(op.other.shape, shape);
+
+    let inputReshaped = op.input.reshape(inputBroadShape);
+    let otherReshaped = op.other.reshape(otherBroadShape);
+
+    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(inputReshaped.shape, shape);
+    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(otherReshaped.shape, shape);
+
+    let input = inputReshaped.data;
+    let other = otherReshaped.data;
+
+    let inputS0 = (inputBroadDims[0] ? 0 : inputReshaped.strides[0]) | 0;
+    let inputS1 = (inputBroadDims[1] ? 0 : inputReshaped.strides[1]) | 0;
+    let otherS0 = (otherBroadDims[0] ? 0 : otherReshaped.strides[0]) | 0;
+    let otherS1 = (otherBroadDims[1] ? 0 : otherReshaped.strides[1]) | 0;
+    let resultS0 = op.result.strides[0] | 0;
+    let resultS1 = op.result.strides[1] | 0;
+    let s0 = shape[0] | 0;
+    let s1 = shape[1] | 0;
+
+    let iPtr = 0;
+    let oPtr = 0;
+    let rPtr = 0;
+
+    let inputD0 = (inputS0 - inputS1 * s1) | 0;
+    let otherD0 = (otherS0 - otherS1 * s1) | 0;
+    let resultD0 = (resultS0 - resultS1 * s1) | 0;
+
+    let inputD1 = inputS1 | 0;
+    let otherD1 = otherS1 | 0;
+    let resultD1 = resultS1 | 0;
+
+    for (let i = 0; i < s0; i++) {
+
+      for (let j = 0; j < s1; j++) {
+        result[rPtr] = op.body(input[iPtr], other[oPtr]);
+        iPtr = (iPtr + inputD1) | 0;
+        oPtr = (oPtr + otherD1) | 0;
+        rPtr = (rPtr + resultD1) | 0;
+      }
+
+      iPtr = (iPtr + inputD0) | 0;
+      oPtr = (oPtr + otherD0) | 0;
+      rPtr = (rPtr + resultD0) | 0;
+    }
+  }
+
+  _execPairwiseScalar(op) {
+    let input = op.input.data;
+    let other = op.other.data;
+    let result = op.result.data;
+
+    result[0] = op.body(input[0], other[0]);
+  }
+
+  _execPairwiseVector(op) {
+    let input = op.input.data;
+    let other = op.other.data;
+    let result = op.result.data;
+    let shape = op.result.shape;
+
+    let inputBroadDims = ShapeUtils.getBroadcastedDimensions(op.input.shape, shape);
+    let otherBroadDims = ShapeUtils.getBroadcastedDimensions(op.other.shape, shape);
+
+    let inputS0 = (inputBroadDims[0] ? 0 : op.input.strides[0]) | 0;
+    let otherS0 = (otherBroadDims[0] ? 0 : op.other.strides[0]) | 0;
+    let resultS0 = op.result.strides[0] | 0;
+    let s0 = shape[0] | 0;
+
+    let iPtr = 0;
+    let oPtr = 0;
+    let rPtr = 0;
+
+    for (let i = 0; i < s0; i++) {
+      result[rPtr] = op.body(input[iPtr], other[oPtr]);
+      iPtr = (iPtr + inputS0) | 0;
+      oPtr = (oPtr + otherS0) | 0;
+      rPtr = (rPtr + resultS0) | 0;
+    }
+  }
+
   _execReduce(op) {
     switch (op.result.rank) {
       case 0:
@@ -324,6 +262,55 @@ export default class Executor {
         break;
       default:
         this._execReduceGeneral(op);
+        break;
+    }
+  }
+
+  _execReduceGeneral(op) {
+    let reducedDims = op.reducedDims;
+    let input = op.input.data;
+    let result = op.result.data;
+    let shape = op.input.shape;
+    let rank = shape.length | 0;
+
+    let inputPointer = 0;
+    let resultPointer = 0;
+
+    let MEM = []; // [ RevSlots(rank), shape, is, rs, ...]
+    let iS = new Array(rank).fill(0);
+    let rS = new Array(rank).fill(0);
+
+    for (let i = 0; i < rank; i++) {
+      MEM.push(0);
+    }
+    for (let i = 0; i < rank; i++) {
+      let r = rank - 1 - i;
+      MEM.push(shape[r]);
+      iS[i] = op.input.strides[r] | 0;
+      rS[i] = (reducedDims[r] ? 0 : op.result.strides[r]) | 0;
+      MEM.push(iS[i] - (i > 0 ? iS[i - 1] * shape[rank - i] : 0));
+      MEM.push(rS[i] - (i > 0 ? rS[i - 1] * shape[rank - i] : 0));
+    }
+
+    let index = 0;
+    let ptr = 0;
+    for (let i = 0; i < input.length; i++) {
+      ptr = rank | 0;
+      index = 0;
+      MEM[0] = (MEM[0] + 1) | 0;
+
+      result[resultPointer] = op.update(result[resultPointer], input[inputPointer]);
+      inputPointer = (inputPointer + MEM[ptr + 1]) | 0;
+      resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
+
+      while (MEM[index] === MEM[ptr] && index < rank - 1) {
+        MEM[index] = 0;
+        index = (index + 1) | 0;
+        MEM[index] = (MEM[index] + 1) | 0;
+        ptr = (ptr + 3) | 0;
+        inputPointer = (inputPointer + MEM[ptr + 1]) | 0;
+        resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
+      }
     }
   }
 
@@ -361,48 +348,6 @@ export default class Executor {
     }
   }
 
-  _execReduceGeneral(op) {
-    let input = op.input.data;
-    let result = op.result.data;
-
-    let inputStrides = op.input.strides;
-    let resultStrides = op.result.strides;
-
-    let shape = op.result.shape;
-
-    let inputPointer = 0;
-    let resultPointer = 0;
-
-    let rank = shape.length;
-    let slots = new Array(rank).fill(0);
-
-    while (true) {
-
-      // Calc
-      result[resultPointer] = op.body(input[inputPointer]);
-
-      let r = rank - 1;
-      for (; r >= 0; r--) {
-        slots[r]++;
-        inputPointer += inputStrides[r];
-        resultPointer += resultStrides[r];
-
-        if (slots[r] < shape[r]) {
-          break;
-        }
-
-        slots[r] = 0;
-        inputPointer -= inputStrides[r] * shape[r];
-        resultPointer -= resultStrides[r] * shape[r];
-      }
-
-      // Overflown
-      if (r < 0) {
-        break;
-      }
-    }
-  }
-
   _execTransform(op) {
     switch (op.result.rank) {
       case 0:
@@ -414,47 +359,53 @@ export default class Executor {
         break;
       default:
         this._execTransformGeneral(op);
+        break;
     }
   }
 
   _execTransformGeneral(op) {
     let input = op.input.data;
     let result = op.result.data;
-
-    let inputStrides = op.input.strides;
-    let resultStrides = op.result.strides;
-
     let shape = op.result.shape;
+    let rank = shape.length | 0;
 
     let inputPointer = 0;
     let resultPointer = 0;
 
-    let rank = shape.length;
-    let slots = new Array(rank).fill(0);
+    let MEM = []; // [ RevSlots(rank), shape, is, rs, ...]
+    let iS = new Array(rank).fill(0);
+    let rS = new Array(rank).fill(0);
 
-    while (true) {
+    for (let i = 0; i < rank; i++) {
+      MEM.push(0);
+    }
+    for (let i = 0; i < rank; i++) {
+      let r = rank - 1 - i;
+      MEM.push(shape[r]);
+      iS[i] = op.input.strides[r] | 0;
+      rS[i] = op.result.strides[r] | 0;
+      MEM.push(iS[i] - (i > 0 ? iS[i - 1] * shape[rank - i] : 0));
+      MEM.push(rS[i] - (i > 0 ? rS[i - 1] * shape[rank - i] : 0));
+    }
 
-      // Calc
+    let index = 0;
+    let ptr = 0;
+    for (let i = 0; i < result.length; i++) {
+      ptr = rank | 0;
+      index = 0;
+      MEM[0] = (MEM[0] + 1) | 0;
+
       result[resultPointer] = op.body(input[inputPointer]);
+      inputPointer = (inputPointer + MEM[ptr + 1]) | 0;
+      resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
 
-      let r = rank - 1;
-      for (; r >= 0; r--) {
-        slots[r]++;
-        inputPointer += inputStrides[r];
-        resultPointer += resultStrides[r];
-
-        if (slots[r] < shape[r]) {
-          break;
-        }
-
-        slots[r] = 0;
-        inputPointer -= inputStrides[r] * shape[r];
-        resultPointer -= resultStrides[r] * shape[r];
-      }
-
-      // Overflown
-      if (r < 0) {
-        break;
+      while (MEM[index] === MEM[ptr] && index < rank - 1) {
+        MEM[index] = 0;
+        index = (index + 1) | 0;
+        MEM[index] = (MEM[index] + 1) | 0;
+        ptr = (ptr + 3) | 0;
+        inputPointer = (inputPointer + MEM[ptr + 1]) | 0;
+        resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
       }
     }
   }

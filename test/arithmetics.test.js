@@ -39,12 +39,65 @@ test('add - broadcast', function() {
   expect(z).toEqual(expected);
 });
 
+test('add vector', function() {
+  let x = Tensor.create([1, 2, 3]);
+  let y = Tensor.create([4, 5, 6]);
+  let z = x.add(y);
+  let expected = Tensor.create([5, 7, 9]);
+
+  expect(z).toEqual(expected);
+});
+
+test('scalar add', function() {
+  let x = Tensor.create(3);
+  let y = Tensor.create(5);
+  let z = x.add(y);
+  let expected = Tensor.create(8);
+
+  expect(z).toEqual(expected);
+});
+
+test('vector add scalar', function() {
+  let x = Tensor.create([1,2,3]);
+  let y = Tensor.create(5);
+  let z = x.add(y);
+  let expected = Tensor.create([6,7,8]);
+
+  expect(z).toEqual(expected);
+});
+
+test('matrix add scalar', function() {
+  let x = Tensor.create([[1,2,3], [4,5, 6]]);
+  let y = Tensor.create(5);
+  let z = x.add(y);
+  let expected = Tensor.create([[6,7,8],[9, 10, 11]]);
+
+  expect(z).toEqual(expected);
+});
+
+test('matrix add vector', function() {
+  let x = Tensor.create([[1,2,3], [4,5, 6]]);
+  let y = Tensor.create([1,2,3]);
+  let z = x.add(y);
+  let expected = Tensor.create([[2,4,6],[5, 7, 9]]);
+
+  expect(z).toEqual(expected);
+});
+
+test('3d add vector', function() {
+  let x = Tensor.create([[[1,2,3], [4,5, 6]]]);
+  let y = Tensor.create([1,2,3]);
+  let z = x.add(y);
+  let expected = Tensor.create([[[2,4,6],[5, 7, 9]]]);
+
+  expect(z).toEqual(expected);
+});
+
 // TODO: BUG - This SHOULD throw error since not possible.
 test('addi - throw error', function() {
   let x = new Tensor({data: [1, 2, 3], shape: [1, 3]});
   let y = new Tensor({data: [2, 3], shape: [2, 1]});
   let z = x.addi(y);
-  let expected = Tensor.create([[3, 4, 5], [7, 8, 9]]);
 
   throw new Error();
   // console.log(z);

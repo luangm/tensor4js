@@ -358,9 +358,7 @@ export default class TensorMath {
     let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
     let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
     let resultShape2 = ShapeUtils.reduceShape(base.shape, dims, keepDims);
-
-    console.log(resultShape, resultShape2);
-
+    
     let result = new Tensor({shape: resultShape});
     Executor.instance.exec(new ReduceSumOp(base, null, result, {reducedDims}));
     return result.reshape(resultShape2);

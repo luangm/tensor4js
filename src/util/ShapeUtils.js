@@ -31,9 +31,9 @@ export default class ShapeUtils {
 
   /**
    * get dimensions that need to be broadcasted
-   * @param input {Array}
-   * @param result {Array} the broadcasted shape, could be of different length from input
-   * @returns {Array} boolean
+   * @param {[int]} input
+   * @param {[int]} result the broadcasted shape, could be of different length from input
+   * @returns {[boolean]}
    */
   static getBroadcastedDimensions(input, result) {
     let dims = new Array(input.length);
@@ -42,6 +42,24 @@ export default class ShapeUtils {
       dims[i] = (input[i] === 1 && result[resIndex] !== 1);
     }
     return dims;
+  }
+
+  /**
+   * Get the shape that must be reshaped to match result's rank
+   * @param {[int]} input
+   * @param {[int]} result
+   * @return {[int]}
+   */
+  static getBroadcastedShape(input, result) {
+    if (input.length >= result.length) {
+      return input;
+    }
+
+    let newShape = input.slice();
+    for (let i = 0; i < result.length - input.length; i++) {
+      newShape.unshift(1);
+    }
+    return newShape;
   }
 
   static getLength(shape) {
