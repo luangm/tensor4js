@@ -3,8 +3,8 @@ import WebGLTexture from "./WebGLTexture";
 export default class WebGLTensor {
 
   /**
-   * @param data Float32Array
-   * @param shape [M, N]
+   * @param {Float32Array} data
+   * @param {[int]} shape [M, N]
    * @param context WebGLContext
    * @param isOutput if the tensor should be an output tensor, for encoding
    */

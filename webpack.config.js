@@ -37,6 +37,7 @@ module.exports = {
 
   plugins: [
     new UglifyJsPlugin(),
+    new webpack.optimize
     // new BundleAnalyzerPlugin()
   ]
 };

@@ -1,7 +1,7 @@
-import SpecialOp from "./SpecialOp";
 import * as Blas from "../../blas/Blas";
+import Operation from "../Operation";
 
-export default class MatMulOp extends SpecialOp {
+export default class MatMulOp extends Operation {
 
   constructor(input, other, result, transposeA = false, transposeB = false) {
     super(input, other, result);
@@ -11,10 +11,6 @@ export default class MatMulOp extends SpecialOp {
 
   get isSpecial() {
     return true;
-  }
-
-  get type() {
-    return 'matmul';
   }
 
   exec() {

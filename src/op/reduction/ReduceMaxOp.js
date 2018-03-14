@@ -2,20 +2,8 @@ import ReductionOp from "./ReductionOp";
 
 export default class ReduceMaxOp extends ReductionOp {
 
-  constructor(input, other, result) {
-    super(input, other, result);
-  }
-
-  get type() {
-    return 'reduceMax';
-  }
-
-  body(a, b) {
-    return a;
-  }
-
-  getResult(accum, n) {
-    return accum;
+  get initialValue() {
+    return -Number.MAX_VALUE;
   }
 
   update(accum, a) {

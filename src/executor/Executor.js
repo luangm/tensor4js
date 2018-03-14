@@ -265,6 +265,10 @@ export default class Executor {
     let reducedDims = op.reducedDims;
     let input = op.input.data;
     let result = op.result.data;
+    if (op.initialValue !== 0) {
+      op.result.fill(op.initialValue);
+    }
+
     let shape = op.input.shape;
     let rank = shape.length | 0;
 
@@ -294,7 +298,8 @@ export default class Executor {
       index = 0;
       MEM[0] = (MEM[0] + 1) | 0;
 
-      result[resultPointer] = op.update(result[resultPointer], input[inputPointer]);
+      let value = op.body(input[inputPointer]);
+      result[resultPointer] = op.update(result[resultPointer], value);
       inputPointer = (inputPointer + MEM[ptr + 1]) | 0;
       resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
 
@@ -307,12 +312,28 @@ export default class Executor {
         resultPointer = (resultPointer + MEM[ptr + 2]) | 0;
       }
     }
+
+    if (op.shouldPostProcess) {
+      let n = 1;
+      for (let i = 0; i < reducedDims.length; i++) {
+        if (reducedDims[i]) {
+          n *= shape[i];
+        }
+      }
+
+      for (let i = 0; i < result.length; i++) {
+        result[i] = op.getResult(result[i], n);
+      }
+    }
   }
 
   _execReduceMatrix(op) {
     let reducedDims = op.reducedDims;
     let input = op.input.data;
     let result = op.result.data;
+    if (op.initialValue !== 0) {
+      op.result.fill(op.initialValue);
+    }
 
     let inputStrides = op.input.strides;
     let resultStrides = op.result.strides;
@@ -329,7 +350,21 @@ export default class Executor {
       for (let j = 0; j < s1; j++) {
         let inputPointer = i * is0 + j * is1;
         let resultPointer = i * rs0 + j * rs1;
-        result[resultPointer] = op.update(result[resultPointer], input[inputPointer]);
+        let value = op.body(input[inputPointer]);
+        result[resultPointer] = op.update(result[resultPointer], value);
+      }
+    }
+
+    if (op.shouldPostProcess) {
+      let n = 1;
+      for (let i = 0; i < reducedDims.length; i++) {
+        if (reducedDims[i]) {
+          n *= shape[i];
+        }
+      }
+
+      for (let i = 0; i < result.length; i++) {
+        result[i] = op.getResult(result[i], n);
       }
     }
   }
@@ -337,9 +372,18 @@ export default class Executor {
   _execReduceVector(op) {
     let input = op.input.data;
     let result = op.result.data;
+    if (op.initialValue !== 0) {
+      op.result.fill(op.initialValue);
+    }
 
     for (let i = 0; i < input.length; i++) {
-      result[0] = op.update(result[0], input[i]);
+      let value = op.body(input[i]);
+      result[0] = op.update(result[0], value);
+    }
+
+    if (op.shouldPostProcess) {
+      let n = input.length;
+      result[0] = op.getResult(result[0], n);
     }
   }
 

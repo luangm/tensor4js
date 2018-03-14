@@ -8,6 +8,9 @@ import ModOp from "./op/pairwise/ModOp";
 import MultiplyOp from "./op/pairwise/MultiplyOp";
 import SubtractOp from "./op/pairwise/SubtractOp";
 import ReduceMaxOp from "./op/reduction/ReduceMaxOp";
+import ReduceMeanOp from "./op/reduction/ReduceMeanOp";
+import ReduceMinOp from "./op/reduction/ReduceMinOp";
+import ReduceProdOp from "./op/reduction/ReduceProdOp";
 import ReduceSumOp from "./op/reduction/ReduceSumOp";
 import MatMulOp from "./op/special/MatMulOp";
 import AbsOp from "./op/transform/AbsOp";
@@ -19,6 +22,7 @@ import AtanhOp from "./op/transform/AtanhOp";
 import AtanOp from "./op/transform/AtanOp";
 import CoshOp from "./op/transform/CoshOp";
 import CosOp from "./op/transform/CosOp";
+import EluOp from "./op/transform/EluOp";
 import Expm1Op from "./op/transform/Expm1Op";
 import ExpOp from "./op/transform/ExpOp";
 import IndexSetOp from "./op/transform/IndexSetOp";
@@ -191,6 +195,19 @@ export default class TensorMath {
     return result;
   }
 
+  /**
+   * Computes the Elu Activation
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static elu(base, result) {
+    result = result || new Tensor({shape: base.shape});
+    Executor.instance.exec(new EluOp(base, null, result));
+    return result;
+  }
+
   // DONE
   static exp(base, result) {
     result = result || new Tensor({shape: base.shape});
@@ -238,14 +255,14 @@ export default class TensorMath {
   }
 
   static matmul(left, right, transposeA = false, transposeB = false, result) {
-
-    // TODO: Dimension Checks
+    if (left.rank !== 2 || right.rank !== 2) {
+      throw new Error('Invalid Operation, Rank of left and right must be 2');
+    }
 
     let shape = [0, 0];
     shape[0] = transposeA ? left.shape[1] : left.shape[0];
     shape[1] = transposeB ? right.shape[0] : right.shape[1];
     result = result || new Tensor({shape});
-
     Executor.instance.exec(new MatMulOp(left, right, result, transposeA, transposeB));
     return result;
   }
@@ -322,28 +339,84 @@ export default class TensorMath {
     return result;
   }
 
-  // static multiply(left, right, result) {
-  //   let newLeft = left.broadcast(resultShape);
-  //   let newRight = right.broadcast(resultShape);
-  // Executor.instance.exec(new MultiplyOp(left, right, result));
-  // return result;
-  // }
-
-  static reduceMax(base, dim) {
-    if (dim === -1) {
-      return base.sum();
-    }
-
-    let resultShape = base.shape.slice();
-    resultShape[dim] = 1;
+  /**
+   * Reduce Max
+   *
+   * @param {Tensor} base
+   * @param {int|int[]} [dims] dims to be reduced
+   * @param {boolean} [keepDims] If keepDims, the dims are kept at 1
+   * @returns {Tensor}
+   */
+  static reduceMax(base, dims = -1, keepDims = false) {
+    let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
+    let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
     let result = new Tensor({shape: resultShape});
-    let op = new ReduceMaxOp(base, null, result);
-    Executor.instance.execAtDim(op, dim);
+    Executor.instance.exec(new ReduceMaxOp(base, null, result, {reducedDims}));
+    if (keepDims) {
+      return result;
+    }
+    let reducedShape = ShapeUtils.reduceShape(base.shape, dims, false);
+    return result.reshape(reducedShape);
+  }
 
-    // resultShape = base.shape.slice();
-    // resultShape.splice(dim, 1);
+  /**
+   * Reduce Mean
+   *
+   * @param {Tensor} base
+   * @param {int|int[]} [dims] dims to be reduced
+   * @param {boolean} [keepDims] If keepDims, the dims are kept at 1
+   * @returns {Tensor}
+   */
+  static reduceMean(base, dims = -1, keepDims = false) {
+    let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
+    let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
+    let result = new Tensor({shape: resultShape});
+    Executor.instance.exec(new ReduceMeanOp(base, null, result, {reducedDims}));
+    if (keepDims) {
+      return result;
+    }
+    let reducedShape = ShapeUtils.reduceShape(base.shape, dims, false);
+    return result.reshape(reducedShape);
+  }
 
-    return result.reshape(resultShape);
+  /**
+   * Reduce Min
+   *
+   * @param {Tensor} base
+   * @param {int|int[]} [dims] dims to be reduced
+   * @param {boolean} [keepDims] If keepDims, the dims are kept at 1
+   * @returns {Tensor}
+   */
+  static reduceMin(base, dims = -1, keepDims = false) {
+    let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
+    let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
+    let result = new Tensor({shape: resultShape});
+    Executor.instance.exec(new ReduceMinOp(base, null, result, {reducedDims}));
+    if (keepDims) {
+      return result;
+    }
+    let reducedShape = ShapeUtils.reduceShape(base.shape, dims, false);
+    return result.reshape(reducedShape);
+  }
+
+  /**
+   * Reduce Prod
+   *
+   * @param {Tensor} base
+   * @param {int|int[]} [dims] dims to be reduced
+   * @param {boolean} [keepDims] If keepDims, the dims are kept at 1
+   * @returns {Tensor}
+   */
+  static reduceProd(base, dims = -1, keepDims = false) {
+    let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
+    let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
+    let result = new Tensor({shape: resultShape});
+    Executor.instance.exec(new ReduceProdOp(base, null, result, {reducedDims}));
+    if (keepDims) {
+      return result;
+    }
+    let reducedShape = ShapeUtils.reduceShape(base.shape, dims, false);
+    return result.reshape(reducedShape);
   }
 
   /**
@@ -357,11 +430,13 @@ export default class TensorMath {
   static reduceSum(base, dims = -1, keepDims = false) {
     let reducedDims = ShapeUtils.getReducedDims(base.shape, dims);
     let resultShape = ShapeUtils.reduceShape(base.shape, dims, true);
-    let resultShape2 = ShapeUtils.reduceShape(base.shape, dims, keepDims);
-    
     let result = new Tensor({shape: resultShape});
     Executor.instance.exec(new ReduceSumOp(base, null, result, {reducedDims}));
-    return result.reshape(resultShape2);
+    if (keepDims) {
+      return result;
+    }
+    let reducedShape = ShapeUtils.reduceShape(base.shape, dims, false);
+    return result.reshape(reducedShape);
   }
 
   /**
@@ -434,14 +509,28 @@ export default class TensorMath {
     return result;
   }
 
-  static sin(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Sine Function
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static sin(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new SinOp(base, null, result));
     return result;
   }
 
-  static sinh(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   * Hyper Sine Function
+   *
+   * @param {Tensor} base
+   * @param {Tensor} [result]
+   * @return {Tensor}
+   */
+  static sinh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new SinhOp(base, null, result));
     return result;
   }
