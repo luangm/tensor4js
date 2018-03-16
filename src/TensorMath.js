@@ -76,7 +76,7 @@ export default class TensorMath {
 
   // DONE
   static add(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new AddOp(left, right, result));
     return result;
   }
@@ -190,7 +190,7 @@ export default class TensorMath {
 
   // DONE
   static divide(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new DivideOp(left, right, result));
     return result;
   }
@@ -269,7 +269,7 @@ export default class TensorMath {
 
   // DONE
   static max(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MaxOp(left, right, result));
     return result;
   }
@@ -306,21 +306,21 @@ export default class TensorMath {
 
   // DONE
   static min(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MinOp(left, right, result));
     return result;
   }
 
   // DONE
   static mod(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new ModOp(left, right, result));
     return result;
   }
 
   // DONE
   static multiply(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new MultiplyOp(left, right, result));
     return result;
   }
@@ -625,7 +625,7 @@ export default class TensorMath {
   }
 
   static subtract(left, right, result) {
-    result = result || new Tensor({shape: TensorUtils.broadcastShapes(left.shape, right.shape)});
+    result = result || new Tensor({shape: ShapeUtils.broadcastShapes(left.shape, right.shape)});
     Executor.instance.exec(new SubtractOp(left, right, result));
     return result;
   }

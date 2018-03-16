@@ -2,45 +2,6 @@ import Tensor from "../Tensor";
 
 export default class TensorUtils {
 
-
-
-  static broadcastShapes(a, b) {
-    let rank = a.length;
-    let result = Array.from(a);
-
-    if (b.length > a.length) {
-      rank = b.length;
-      result = Array.from(b);
-    }
-
-    let aIndex = a.length - 1;
-    let bIndex = b.length - 1;
-
-    for (let i = 0; i < rank; i++) {
-      if (aIndex < 0 || bIndex < 0) {
-        break;
-      }
-
-      let left = a[aIndex];
-      let right = b[bIndex];
-
-      if (left !== 1 && right !== 1 && left !== right) {
-        throw new Error('cannot broadcast shapes. not compatible');
-      }
-
-      if (b.length > a.length) {
-        result[bIndex] = Math.max(left, right);
-      } else {
-        result[aIndex] = Math.max(left, right);
-      }
-
-      aIndex--;
-      bIndex--;
-    }
-
-    return result;
-  }
-
   static broadcastTensor(tensor, shape) {
 
     if (TensorUtils.shapeEquals(tensor.shape, shape)) {
@@ -205,29 +166,6 @@ export default class TensorUtils {
       }
     }
     return offset;
-  }
-
-  /**
-   * Get the indices that are reduced, return null if one of the indices is not reduced.
-   */
-  static getReductionIndices(a, b) {
-    let resultShape = TensorUtils.broadcastShapes(a, b);
-    let left = -1;
-    let right = -1;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i] === 1 && a[i] !== resultShape[i]) {
-        left = i;
-      }
-
-      if (b[i] === 1 && b[i] !== resultShape[i]) {
-        right = i;
-      }
-    }
-
-    return {
-      left: left >= 0 ? left : null,
-      right: right >= 0 ? right : null
-    }
   }
 
   // image is a tensor of [channels, rows, cols]

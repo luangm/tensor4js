@@ -81,6 +81,33 @@ export default class ShapeUtils {
     return reducedDims;
   }
 
+  /**
+   * Get the indices that are reduced, return null if one of the indices is not reduced.
+   *
+   * @param {[int]} a - shape1
+   * @param {[int]} b - shape2
+   * @return {{left: [int]|null, right: [int]|null}}
+   */
+  static getReductionIndices(a, b) {
+    let resultShape = ShapeUtils.broadcastShapes(a, b);
+    let left = [];
+    let right = [];
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] === 1 && a[i] !== resultShape[i]) {
+        left.push(i);
+      }
+
+      if (b[i] === 1 && b[i] !== resultShape[i]) {
+        right.push(i);
+      }
+    }
+
+    return {
+      left: left.length > 0 ? left : null,
+      right: right.length > 0 ? right : null
+    }
+  }
+
   static getStrides(shape) {
     let rank = shape.length;
     let strides = new Array(rank);
