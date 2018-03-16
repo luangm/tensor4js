@@ -3,9 +3,8 @@
   "version": "0.0.3",
   "description": "Tensor for JavaScript",
   "main": "dist/index.js",
-  "rollup": "dist/index.js",
   "scripts": {
-    "build": "rollup -c",
+    "build": "webpack",
     "test": "jest"
   },
   "author": {
@@ -33,11 +32,6 @@
     "glslify-loader": "^1.0.2",
     "jest": "^22.0.4",
     "raw-loader": "^0.5.1",
-    "rollup": "^0.50.0",
-    "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-uglify": "^2.0.1",
     "uglifyjs-webpack-plugin": "^1.1.4",
     "webpack": "^3.8.1",
     "webpack-babel-external-helpers-2": "^3.1.0",

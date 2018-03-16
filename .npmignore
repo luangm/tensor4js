@@ -11,3 +11,5 @@ webpack.config.js
 .babelrc
 test
 docs
+dev
+dist/dev.js

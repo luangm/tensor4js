@@ -1,9 +1,11 @@
 import Tensor from "./Tensor";
 import TensorMath from "./TensorMath";
+import ShapeUtils from "./util/ShapeUtils";
 
 export {
   Tensor,
-  TensorMath
+  TensorMath,
+  ShapeUtils
 }
 
 export function println(...array) {
