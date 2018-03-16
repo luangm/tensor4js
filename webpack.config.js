@@ -2,6 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const WebpackBabelExternalsPlugin = require('webpack-babel-external-helpers-2');
 
 module.exports = {
   entry: {
@@ -36,8 +37,16 @@ module.exports = {
   },
 
   plugins: [
-    new UglifyJsPlugin(),
-    new webpack.optimize
+    // new UglifyJsPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    new WebpackBabelExternalsPlugin(),
     // new BundleAnalyzerPlugin()
   ]
+
+  // stats: {
+  //   Examine all modules
+    // maxModules: Infinity,
+    // Display bailout reasons
+    // optimizationBailout: true
+  // }
 };

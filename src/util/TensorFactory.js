@@ -1,10 +1,18 @@
-import Tensor from "../Tensor";
 import Executor from "../executor/Executor";
+import LinspaceOp from "../op/creation/LinspaceOp";
 import RandomOp from "../op/transform/RandomOp";
 import Shape from "../Shape";
-import LinspaceOp from "../op/creation/LinspaceOp";
+import Tensor from "../Tensor";
+import ArangeOp from "../op/creation/ArangeOp";
 
 export default class TensorFactory {
+
+  static arange(stop, start, step) {
+    let num = Math.ceil((stop - start) / step);
+    let tensor = new Tensor({shape: [num]});
+    Executor.instance.exec(new ArangeOp(tensor, null, tensor, {start, stop, step}));
+    return tensor;
+  }
 
   /**
    * Create a tensor from the given array.

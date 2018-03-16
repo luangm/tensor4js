@@ -1,11 +1,10 @@
-/**
- * Wrapper around WebGL Context
- *
- */
 import Encode from "./blas/Encode";
 import WebGLTensor from "./WebGLTensor";
 
-export default class WebGLContext {
+/**
+ * Wrapper around WebGL Context
+ */
+export default class GLContext {
 
   constructor(options = {}) {
     this._canvas = options.canvas || document.createElement('canvas');

@@ -71,6 +71,16 @@ export default class Tensor {
     return this._shape.strides;
   }
 
+  /**
+   * arange function. Note that first parameter is stop, not start, due to how JS params works.
+   * @param {int} stop
+   * @param {int} [start = 0]
+   * @param {int} [step = 1]
+   */
+  static arange(stop, start = 0, step = 1) {
+    return TensorFactory.arange(stop, start, step);
+  }
+
   static create(array) {
     if (array instanceof Tensor) {
       return array;
@@ -123,6 +133,13 @@ export default class Tensor {
     return this._data[offset];
   }
 
+  /**
+   * Create and converts the current tensor to a GpuTensor
+   */
+  gpu() {
+
+  }
+
   matmul(other) {
     return TensorMath.matmul(this, other);
   }
@@ -139,7 +156,14 @@ export default class Tensor {
     return TensorMath.negate(this);
   }
 
-  reshape(shape) {
+  reshape(...shape) {
+    if (shape.length === 0) {
+      return this;
+    }
+
+    if (Array.isArray(shape[0])) {
+      return TensorUtils.reshape(this, shape[0]);
+    }
     return TensorUtils.reshape(this, shape);
   }
 

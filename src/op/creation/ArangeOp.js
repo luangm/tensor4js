@@ -1,12 +1,13 @@
 import Operation from "../Operation"
 
-export default class LinspaceOp extends Operation {
+export default class ArangeOp extends Operation {
 
-  constructor(input, other, result, {from = 0, to = 0, num = 1} = {}) {
-    super(input, other, result, {from, to, num});
+  constructor(input, other, result, {start = 0, stop = 1, step = 1} = {}) {
+    super(input, other, result, {start, stop, step});
 
-    this._from = from;
-    this._step = num === 1 ? 0 : (to - from) / (num - 1);
+    this._start = start;
+    this._stop = stop;
+    this._step = step;
   }
 
   get isSpecial() {
@@ -19,7 +20,7 @@ export default class LinspaceOp extends Operation {
 
   exec() {
     let result = this.result.data;
-    let val = this._from;
+    let val = this._start;
     for (let i = 0; i < result.length; i++) {
       result[i] = val;
       val += this._step;
