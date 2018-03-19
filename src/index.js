@@ -2,12 +2,14 @@ import Tensor from "./Tensor";
 import TensorMath from "./TensorMath";
 import ShapeUtils from "./util/ShapeUtils";
 import TensorUtils from "./util/TensorUtils";
+import ArrayUtils from "./util/ArrayUtils";
 
 export {
   Tensor,
   TensorMath,
   ShapeUtils,
-  TensorUtils
+  TensorUtils,
+  ArrayUtils
 }
 
 export function println(...array) {
