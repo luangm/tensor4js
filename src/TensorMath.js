@@ -246,10 +246,10 @@ export default class TensorMath {
     if (dim < 0) {
       dim += base.rank;
     }
-    let max = TensorMath.reduceMax(base, dim);
+    let max = TensorMath.reduceMax(base, dim, true);
     let subtract = TensorMath.subtract(base, max);
     let exp = TensorMath.exp(subtract);
-    let sum = TensorMath.reduceSum(exp, dim);
+    let sum = TensorMath.reduceSum(exp, dim, true);
     let log = TensorMath.log(sum);
     return TensorMath.add(log, max);
   }
