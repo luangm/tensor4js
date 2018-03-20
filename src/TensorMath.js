@@ -648,8 +648,14 @@ export default class TensorMath {
     return result;
   }
 
-  static tanh(base) {
-    let result = new Tensor({shape: base.shape});
+  /**
+   *
+   * @param base
+   * @param result
+   * @return {*|Tensor}
+   */
+  static tanh(base, result) {
+    result = result || new Tensor({shape: base.shape});
     Executor.instance.exec(new TanhOp(base, null, result));
     return result;
   }
@@ -661,7 +667,7 @@ export default class TensorMath {
       shape[i] *= repeats[i];
     }
     let result = new Tensor({shape});
-    Executor.instance.exec(new SetOp(result, base.get([0, 0]), result));
+    Executor.instance.exec(new SetOp(result, null, result, {scalar: base.data[0]}));
     return result;
   }
 }

@@ -7,10 +7,6 @@ export default class SetOp extends TransformOp {
     this._scalar = scalar;
   }
 
-  get type() {
-    return 'set';
-  }
-
   body(a, b) {
     return this._scalar;
   }

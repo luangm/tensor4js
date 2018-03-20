@@ -218,3 +218,11 @@ test('softmaxcrossentropy', function() {
   let result = TensorMath.softmaxCrossEntropyWithLogits(labels, logits);
   println(result);
 });
+
+test('tile', function() {
+  let base = Tensor.create([[1]]);
+  let repeats = [10, 10];
+
+  let result = TensorMath.tile(base, repeats);
+  println(result);
+});
